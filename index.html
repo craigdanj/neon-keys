@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#17191c" />
+    <title>Neon Keys — 80s Synthesizer</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="./index.html"
+          ><span class="brand-mark">≋</span> NEON KEYS
+          <span class="badge">JS</span></a
+        >
+        <div class="header-right">
+          <span class="led" id="statusLed"></span
+          ><span id="status">AUDIO STANDBY</span
+          ><button id="power" class="power">Enable audio <span>↗</span></button>
+        </div>
+      </header>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">THE SOUND OF ANOTHER TOMORROW</p>
+          <h1>Back to the <em>future.</em></h1>
+          <p class="intro">
+            Analog warmth. Digital shimmer. Your own little time machine.
+          </p>
+        </div>
+        <div class="hero-meta">
+          <span>1980 — ∞</span><span>POLYPHONIC SYNTHESIZER</span
+          ><span>10 VOICES OF A DECADE</span>
+        </div>
+      </section>
+      <section class="instrument" aria-label="Synthesizer">
+        <div class="topline">
+          <span
+            ><i class="pink-dot"></i> NK–80
+            <small>PERFORMANCE SYNTHESIZER</small></span
+          ><span class="topline-right"
+            >ANALOG + FM <b>24</b> VOICE POLYPHONY</span
+          >
+        </div>
+        <div class="control-deck">
+          <section class="patch-section">
+            <div class="section-label">
+              <span>01 / SOUND BANK</span><span id="patchNumber">P.01</span>
+            </div>
+            <div class="display">
+              <div class="display-top">
+                <span id="category">POLY / WARM</span
+                ><span class="display-led">● READY</span>
+              </div>
+              <h2 id="patchName">Midnight pad</h2>
+              <p id="patchDescription">
+                A slow, wide wash of detuned saw waves.
+              </p>
+              <canvas
+                id="scope"
+                width="550"
+                height="72"
+                aria-label="Audio waveform"
+              ></canvas>
+              <div class="display-bottom">
+                <span id="voiceCount">00 VOICES</span
+                ><span id="engineType">SAW + SAW</span><span>440 Hz</span>
+              </div>
+            </div>
+            <label class="sr-only" for="preset">Sound preset</label>
+            <div class="preset-nav">
+              <button id="prev" aria-label="Previous preset">←</button
+              ><select id="preset"></select
+              ><button id="next" aria-label="Next preset">→</button>
+            </div>
+            <div class="quick-presets" id="quickPresets"></div>
+          </section>
+          <section class="shape-section">
+            <div class="section-label">
+              <span>02 / TONE & ENVELOPE</span><span>SCULPT</span>
+            </div>
+            <div class="knob-grid" id="toneControls"></div>
+            <div class="section-label fx-label">
+              <span>03 / EFFECTS RACK</span><span>STEREO</span>
+            </div>
+            <div class="knob-grid effects" id="effectControls"></div>
+            <p class="control-hint">
+              Tone changes shape your next note. Effects update live.
+            </p>
+          </section>
+          <section class="performance-section">
+            <div class="section-label"><span>04 / PERFORMANCE</span></div>
+            <div class="volume-row">
+              <label for="volume"
+                >MASTER <output id="volumeValue">55%</output></label
+              ><input
+                id="volume"
+                type="range"
+                min="0"
+                max="1"
+                step=".01"
+                value=".55"
+              />
+            </div>
+            <div class="arp-title">
+              <span>ARPEGGIATOR</span
+              ><button class="switch" id="arp" aria-pressed="false">OFF</button>
+            </div>
+            <label class="tempo-label" for="tempo"
+              >TEMPO
+              <span><output id="tempoValue">108</output> BPM</span></label
+            ><input id="tempo" type="range" min="60" max="180" value="108" />
+            <div class="arp-options">
+              <select id="arpMode" aria-label="Arpeggiator pattern">
+                <option value="up">Up ↑</option>
+                <option value="down">Down ↓</option>
+                <option value="bounce">Up / down ↕</option>
+                <option value="random">Random ⤨</option></select
+              ><select id="arpOctaves" aria-label="Arpeggiator octaves">
+                <option value="1">1 octave</option>
+                <option value="2">2 octaves</option>
+              </select>
+            </div>
+            <button id="demo" class="demo-button">
+              <span id="demoIcon">▶</span> Play demo</button
+            ><button id="panic" class="panic">■ &nbsp; All notes off</button>
+            <div class="signal">
+              <span class="led"></span
+              ><span>100% SYNTHESIZED<br />NO SAMPLES. NO DOWNLOADS.</span>
+            </div>
+          </section>
+        </div>
+        <div class="playbar">
+          <div class="octave-control">
+            <span>OCTAVE</span
+            ><button id="octaveDown" aria-label="Octave down">−</button
+            ><output id="octaveValue">0</output
+            ><button id="octaveUp" aria-label="Octave up">+</button>
+          </div>
+          <button id="sustain" aria-pressed="false">
+            <span class="sustain-dot"></span>SUSTAIN <kbd>SPACE</kbd></button
+          ><label for="velocity"
+            >VELOCITY
+            <input
+              id="velocity"
+              type="range"
+              min=".1"
+              max="1"
+              step=".01"
+              value=".8"
+            /><output id="velocityValue">80</output></label
+          ><span class="key-tip"
+            >YOUR KEYBOARD IS THE KEYBOARD <span>↓</span></span
+          >
+        </div>
+        <div class="keybed">
+          <div class="wheels">
+            <label for="bend">PITCH</label
+            ><input
+              id="bend"
+              aria-label="Pitch bend"
+              type="range"
+              min="-1"
+              max="1"
+              value="0"
+              step=".01"
+            /><label for="mod">MOD</label
+            ><input
+              id="mod"
+              aria-label="Modulation"
+              type="range"
+              min="0"
+              max="1"
+              value="0"
+              step=".01"
+            />
+          </div>
+          <div class="keyboard-scroll">
+            <div id="keyboard" role="group" aria-label="Piano keyboard"></div>
+          </div>
+        </div>
+        <div class="bottomline">
+          <span
+            ><i class="pink-dot"></i> DESIGNED FOR LATE NIGHTS & LOUD
+            IDEAS</span
+          ><span
+            >C3 — C6 <span class="divider">/</span> MOUSE · TOUCH ·
+            KEYBOARD</span
+          >
+        </div>
+      </section>
+      <footer>
+        <span>A little nostalgia. A lot of possibility.</span
+        ><button id="helpToggle" aria-expanded="false" aria-controls="help">
+          Playing guide <span>↗</span></button
+        ><span>NEON KEYS JS <b>v1.0.0</b></span>
+      </footer>
+      <section id="help" hidden>
+        <h2>Make some noise.</h2>
+        <p>
+          Click <strong>Enable audio</strong>, choose a sound, and play. The
+          keys <strong>A W S E D F T G Y H U J K O L P ;</strong> play C4–E5.
+          Use <strong>Z / X</strong> to shift octaves,
+          <strong>Space</strong> for sustain, and <strong>Esc</strong> to
+          release all notes. Pitch bends ±2 semitones; modulation adds vibrato.
+          Pitch returns to center when released.
+        </p>
+        <p>
+          Turn on the arpeggiator and hold a chord. It plays sixteenth notes at
+          the selected tempo. The demo plays an original four-chord progression
+          using the selected sound. Touch supports multiple fingers;
+          computer-keyboard rollover depends on your hardware.
+        </p>
+        <p>
+          Built with the browser’s Web Audio API. Presets evoke classic ’80s
+          textures; they are original patches, not exact recreations of
+          particular hardware.
+        </p>
+      </section>
+      <p id="error" role="alert" hidden></p>
+    </main>
+    <script src="neon-keys.js"></script>
+    <script src="demo.js"></script>
+  </body>
+</html>

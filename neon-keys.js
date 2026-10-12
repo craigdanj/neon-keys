@@ -1,4 +1,4 @@
-/* Neon Keys JS v1.0.0 — MIT License */
+/* Neon Keys JS v1.1.0 — MIT License */
 (function (root) {
   "use strict";
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -7,6 +7,15 @@
     return v;
   };
   const defaults = {
+    mode: "poly",
+    legato: 1,
+    portamento: 0,
+    unison: 1,
+    unisonDetune: 18,
+    stereoSpread: 0.75,
+    pulseWidth: 0.5,
+    pwmDepth: 0.18,
+    pwmRate: 0.6,
     engine: "analog",
     wave: "sawtooth",
     wave2: "sawtooth",
@@ -237,6 +246,165 @@
       },
     ],
   ];
+  patches.push(
+    [
+      "pwm-silk",
+      "Silk circuit",
+      "PWM / PAD",
+      "Slow pulse movement, three layers, and a soft stereo glow.",
+      {
+        wave: "pulse",
+        wave2: "pulse",
+        pulseWidth: 0.42,
+        pwmDepth: 0.22,
+        pwmRate: 0.34,
+        unison: 3,
+        unisonDetune: 14,
+        stereoSpread: 0.85,
+        attack: 0.48,
+        decay: 1.4,
+        sustain: 0.78,
+        release: 2.1,
+        cutoff: 2400,
+        envAmount: 1400,
+        chorus: 0.3,
+        delay: 0.12,
+        reverb: 0.36,
+        level: 0.68,
+      },
+    ],
+    [
+      "pwm-strings",
+      "Electric ensemble",
+      "PWM / STRINGS",
+      "Shifting pulse strings with a wide, gently detuned ensemble.",
+      {
+        wave: "pulse",
+        wave2: "sawtooth",
+        pulseWidth: 0.32,
+        pwmDepth: 0.17,
+        pwmRate: 0.72,
+        unison: 4,
+        unisonDetune: 20,
+        stereoSpread: 1,
+        attack: 0.24,
+        decay: 1,
+        sustain: 0.8,
+        release: 1.5,
+        cutoff: 3600,
+        envAmount: 1800,
+        chorus: 0.25,
+        phaser: 0.2,
+        reverb: 0.28,
+        level: 0.65,
+      },
+    ],
+    [
+      "unison-brass",
+      "Skyline brass",
+      "UNISON / BRASS",
+      "Four bold layers with a bright, punchy filter attack.",
+      {
+        unison: 4,
+        unisonDetune: 24,
+        stereoSpread: 0.8,
+        attack: 0.018,
+        decay: 0.4,
+        sustain: 0.5,
+        release: 0.3,
+        cutoff: 1900,
+        envAmount: 5700,
+        resonance: 1.2,
+        chorus: 0.15,
+        reverb: 0.2,
+        level: 0.73,
+      },
+    ],
+    [
+      "glide-lead",
+      "Velvet glide",
+      "MONO / LEGATO",
+      "Hold one key and play another to glide without a new attack.",
+      {
+        mode: "mono",
+        legato: 1,
+        portamento: 0.16,
+        wave: "sawtooth",
+        wave2: "pulse",
+        pulseWidth: 0.38,
+        pwmDepth: 0.1,
+        pwmRate: 0.9,
+        unison: 3,
+        unisonDetune: 16,
+        stereoSpread: 0.7,
+        attack: 0.035,
+        decay: 0.6,
+        sustain: 0.75,
+        release: 0.3,
+        cutoff: 3700,
+        envAmount: 2300,
+        delay: 0.3,
+        reverb: 0.2,
+        chorus: 0.12,
+        level: 0.65,
+      },
+    ],
+    [
+      "rubber-bass",
+      "Rubber highway",
+      "MONO / BASS",
+      "A rounded pulse bass with quick slides and a fresh attack per key.",
+      {
+        mode: "mono",
+        legato: 0,
+        portamento: 0.075,
+        wave: "pulse",
+        wave2: "sawtooth",
+        pulseWidth: 0.3,
+        pwmDepth: 0.1,
+        pwmRate: 0.45,
+        unison: 2,
+        unisonDetune: 7,
+        stereoSpread: 0.15,
+        sub: 0.35,
+        attack: 0.006,
+        decay: 0.24,
+        sustain: 0.35,
+        release: 0.13,
+        cutoff: 560,
+        envAmount: 2600,
+        resonance: 2,
+        chorus: 0,
+        delay: 0.05,
+        reverb: 0.04,
+        level: 0.78,
+      },
+    ],
+    [
+      "orbit-lead",
+      "Orbit six",
+      "UNISON / LEAD",
+      "Six detuned layers, wide stereo, and a long singing glide.",
+      {
+        mode: "mono",
+        legato: 1,
+        portamento: 0.3,
+        unison: 6,
+        unisonDetune: 32,
+        stereoSpread: 1,
+        attack: 0.025,
+        decay: 0.6,
+        sustain: 0.85,
+        release: 0.65,
+        cutoff: 5400,
+        envAmount: 1900,
+        chorus: 0.1,
+        delay: 0.3,
+        reverb: 0.26,
+        level: 0.68,
+      },
+    ],
+  );
   const PRESETS = Object.freeze(
     patches.map(([id, name, category, description, params]) =>
       Object.freeze({
@@ -249,6 +417,14 @@
     ),
   );
   const ranges = {
+    legato: [0, 1],
+    portamento: [0, 1.5],
+    unison: [1, 6],
+    unisonDetune: [0, 50],
+    stereoSpread: [0, 1],
+    pulseWidth: [0.1, 0.9],
+    pwmDepth: [0, 0.4],
+    pwmRate: [0.05, 8],
     attack: [0.002, 3],
     decay: [0.03, 8],
     sustain: [0, 1],
@@ -289,6 +465,10 @@
       this.maxVoices = Math.round(clamp(finite(maxVoices, "maxVoices"), 1, 64));
       this.voices = new Map();
       this.sequence = 0;
+      this.monoKeys = [];
+      this.monoVoice = null;
+      this.lastMonoHz = null;
+      this.monoEventTime = -Infinity;
       this.sustained = false;
       this.bend = 0;
       this.mod = 0;
@@ -422,6 +602,7 @@
     setPreset(id) {
       const p = PRESETS.find((p) => p.id === id);
       if (!p) throw new RangeError(`Unknown preset: ${id}`);
+      if (this.params) this.allNotesOff({ immediate: true });
       this.preset = id;
       this.params = { ...p.params };
       this._updateEffects();
@@ -431,9 +612,38 @@
       return { ...this.params };
     }
     setParam(name, value) {
+      if (name === "mode") {
+        if (!["poly", "mono"].includes(value))
+          throw new RangeError("mode must be poly or mono");
+        if (value !== this.params.mode) this.allNotesOff({ immediate: true });
+        this.params.mode = value;
+        return value;
+      }
+      if (name === "wave" || name === "wave2") {
+        if (
+          !["sine", "triangle", "sawtooth", "square", "pulse"].includes(value)
+        )
+          throw new RangeError("Unknown waveform");
+        this.params[name] = value;
+        return value;
+      }
       if (!ranges[name]) throw new RangeError(`Unknown parameter: ${name}`);
       const [a, b] = ranges[name];
       this.params[name] = clamp(finite(value, name), a, b);
+      if (name === "unison" || name === "legato")
+        this.params[name] = Math.round(this.params[name]);
+      // Shift the running filter envelope rather than discarding its contour.
+      const t = this.context.currentTime;
+      if (name === "cutoff" || name === "resonance")
+        for (const v of this.voices.values()) {
+          if (name === "cutoff")
+            v.filter.detune.setTargetAtTime(
+              1200 * Math.log2(this.params.cutoff / v.filterBase),
+              t,
+              0.02,
+            );
+          else v.filter.Q.setTargetAtTime(this.params.resonance, t, 0.02);
+        }
       this._updateEffects();
       return this.params[name];
     }
@@ -457,42 +667,117 @@
         when === undefined ? this.context.currentTime : finite(when, "when"),
       );
     }
-    noteOn(note, velocity = 0.8, { when } = {}) {
+    _validateNote(note, velocity) {
       if (this.destroyed) throw new Error("Synth is disposed.");
       note = Math.round(finite(note, "note"));
       if (note < 0 || note > 127)
         throw new RangeError("MIDI note must be between 0 and 127.");
-      velocity = clamp(finite(velocity, "velocity"), 0, 1);
-      if (velocity === 0) return null;
+      return [note, clamp(finite(velocity, "velocity"), 0, 1)];
+    }
+    _monoTime(t) {
+      // A mono stack is a performance timeline. Submit future events in time order.
+      if (t + 0.00001 < this.monoEventTime)
+        throw new RangeError(
+          "Schedule mono note events in chronological order; cancel with allNotesOff before live input.",
+        );
+      this.monoEventTime = t;
+    }
+    noteOn(note, velocity = 0.8, { when } = {}) {
+      [note, velocity] = this._validateNote(note, velocity);
+      if (!velocity) return null;
+      const t = this._time(when);
+      if (this.params.mode !== "mono")
+        return this._createVoice(note, velocity, t).id;
+      this._monoTime(t);
+      const key = { id: `m${++this.sequence}`, note, velocity, down: true };
+      this.monoKeys.push(key);
+      const v = this.monoVoice;
+      if (v && !v.released && this.voices.has(v.id)) {
+        this._retune(v, note, t, this.params.portamento);
+        if (!this.params.legato) this._envelope(v, velocity, t, true);
+        v.held = false;
+      } else {
+        if (v) this._shorten(v, t);
+        this.monoVoice = this._createVoice(note, velocity, t, this.lastMonoHz);
+      }
+      this.lastMonoHz = 440 * Math.pow(2, (note - 69) / 12);
+      return key.id;
+    }
+    _envelope(v, velocity, t, retrigger = false) {
+      const p = v.params,
+        maxF = Math.min(16000, this.context.sampleRate * 0.44);
+      const ampFrom = retrigger ? this._ampAt(v, t) : 0;
+      const filterFrom = retrigger
+        ? this._shapeAt(v.filterPlan, t, true)
+        : Math.min(p.cutoff, maxF);
+      if (retrigger) {
+        v.amp.gain.cancelAndHoldAtTime(t);
+        v.filter.frequency.cancelAndHoldAtTime(t);
+      }
+      v.amp.gain.setValueAtTime(ampFrom, t);
+      v.filter.frequency.setValueAtTime(filterFrom, t);
+      const level = p.level * Math.pow(velocity, 1.35);
+      v.ampPlan = {
+        start: t,
+        from: ampFrom,
+        peak: level,
+        end: level * p.sustain,
+        attack: p.attack,
+        decay: p.decay,
+      };
+      v.filterPlan = {
+        start: t,
+        from: filterFrom,
+        peak: Math.min(maxF, p.cutoff + p.envAmount * (0.3 + 0.7 * velocity)),
+        end: Math.min(
+          maxF,
+          Math.max(80, p.cutoff + p.envAmount * p.sustain * 0.22),
+        ),
+        attack: p.attack,
+        decay: p.decay,
+      };
+      v.releasePlan = null;
+      v.amp.gain.linearRampToValueAtTime(level, t + p.attack);
+      v.amp.gain.linearRampToValueAtTime(
+        level * p.sustain,
+        t + p.attack + p.decay,
+      );
+      if (!retrigger)
+        v.filter.frequency.setValueAtTime(Math.min(p.cutoff, maxF), t);
+      v.filter.frequency.linearRampToValueAtTime(
+        Math.min(maxF, p.cutoff + p.envAmount * (0.3 + 0.7 * velocity)),
+        t + p.attack,
+      );
+      v.filter.frequency.exponentialRampToValueAtTime(
+        Math.min(maxF, Math.max(80, p.cutoff + p.envAmount * p.sustain * 0.22)),
+        t + p.attack + p.decay,
+      );
+      v.envelopeStart = t;
+      v.fmDepths.forEach(({ gain, ratio }) => {
+        const hz = 440 * Math.pow(2, (v.note - 69) / 12) * ratio;
+        if (retrigger) gain.cancelAndHoldAtTime(t);
+        gain.setValueAtTime(
+          Math.max(0.001, hz * p.index * (0.2 + 0.8 * velocity)),
+          t,
+        );
+        gain.exponentialRampToValueAtTime(
+          Math.max(0.001, hz * p.index * 0.08),
+          t + p.modDecay,
+        );
+      });
+    }
+    _createVoice(note, velocity, t, fromHz = null) {
       const c = this.context,
-        t = this._time(when),
         p = { ...this.params },
         hz = 440 * Math.pow(2, (note - 69) / 12);
       if (this.voices.size >= this.maxVoices) {
-        const candidates = [...this.voices.values()];
-        const victim = candidates.find((v) => v.released) || candidates[0];
-        this._kill(victim);
+        const list = [...this.voices.values()];
+        this._kill(list.find((v) => v.released) || list[0]);
       }
       const amp = c.createGain(),
         filter = c.createBiquadFilter();
       filter.type = "lowpass";
       filter.Q.value = p.resonance;
-      const maxF = Math.min(16000, c.sampleRate * 0.44),
-        base = Math.min(p.cutoff, maxF),
-        peak = Math.min(maxF, base + p.envAmount * (0.3 + 0.7 * velocity));
-      filter.frequency.setValueAtTime(base, t);
-      filter.frequency.linearRampToValueAtTime(peak, t + p.attack);
-      filter.frequency.exponentialRampToValueAtTime(
-        Math.min(maxF, Math.max(80, base + p.envAmount * p.sustain * 0.22)),
-        t + p.attack + p.decay,
-      );
-      const level = p.level * Math.pow(velocity, 1.35);
-      amp.gain.setValueAtTime(0, t);
-      amp.gain.linearRampToValueAtTime(level, t + p.attack);
-      amp.gain.linearRampToValueAtTime(
-        level * p.sustain,
-        t + p.attack + p.decay,
-      );
       filter.connect(amp);
       amp.connect(this.input);
       const v = {
@@ -502,55 +787,103 @@
         params: p,
         amp,
         filter,
+        filterBase: p.cutoff,
+        frequencyPlan: { start: t, end: t, from: hz, to: hz },
         osc: [],
         nodes: [amp, filter],
         pitch: [],
+        tuning: [],
+        pwm: [],
+        fmDepths: [],
         released: false,
         held: false,
       };
-      const oscillator = (
-        type,
-        freq,
-        gain,
-        detune = 0,
-        destination = filter,
-      ) => {
+      const oscillator = (type, ratio, gain, detune, destination) => {
         const o = c.createOscillator(),
           g = c.createGain();
-        o.type = type;
-        o.frequency.value = freq;
+        o.type = type === "pulse" ? "sawtooth" : type;
+        o.frequency.setValueAtTime(hz * ratio, t);
         o.detune.value = detune + this.bend * 200;
         g.gain.value = gain;
-        o.connect(g);
+        if (type === "pulse") {
+          // A saw minus its delayed copy is a variable-width pulse. The oscillator
+          // remains browser band-limited; no main-thread waveform replacement.
+          const delay = c.createDelay(0.25),
+            invert = c.createGain(),
+            dc = c.createBiquadFilter();
+          invert.gain.value = -1;
+          dc.type = "highpass";
+          dc.frequency.value = 15;
+          dc.Q.value = 0.5;
+          const lfo = c.createOscillator(),
+            depth = c.createGain();
+          lfo.frequency.value = p.pwmRate;
+          const pitchHz =
+            hz * ratio * Math.pow(2, (detune + this.bend * 200) / 1200);
+          const width = p.pulseWidth,
+            amount = Math.min(p.pwmDepth, width - 0.05, 0.95 - width);
+          delay.delayTime.setValueAtTime(width / pitchHz, t);
+          depth.gain.setValueAtTime(amount / pitchHz, t);
+          o.connect(dc);
+          o.connect(delay);
+          delay.connect(invert);
+          invert.connect(dc);
+          dc.connect(g);
+          lfo.connect(depth);
+          depth.connect(delay.delayTime);
+          lfo.start(t);
+          v.osc.push(lfo);
+          v.nodes.push(delay, invert, dc, lfo, depth);
+          v.pwm.push({
+            delay: delay.delayTime,
+            depth: depth.gain,
+            ratio,
+            detune,
+            width,
+            amount,
+          });
+        } else o.connect(g);
         g.connect(destination);
         o.start(t);
         v.osc.push(o);
         v.nodes.push(o, g);
         v.pitch.push({ param: o.detune, base: detune });
+        v.tuning.push({ param: o.frequency, ratio });
         return o;
       };
-      if (p.engine === "fm") {
-        const carrier = oscillator("sine", hz, 1);
-        const mod = c.createOscillator(),
-          depth = c.createGain();
-        mod.frequency.value = hz * p.ratio;
-        mod.detune.value = this.bend * 200;
-        depth.gain.setValueAtTime(hz * p.index * (0.2 + 0.8 * velocity), t);
-        depth.gain.exponentialRampToValueAtTime(
-          Math.max(0.01, hz * p.index * 0.08),
-          t + p.modDecay,
-        );
-        mod.connect(depth);
-        depth.connect(carrier.frequency);
-        mod.start(t);
-        v.osc.push(mod);
-        v.nodes.push(mod, depth);
-        v.pitch.push({ param: mod.detune, base: 0 });
-      } else {
-        oscillator(p.wave, hz, 0.48, -p.detune / 2);
-        oscillator(p.wave2, hz, 0.48, p.detune / 2);
-        if (p.sub) oscillator("sine", hz / 2, p.sub);
+      for (let layer = 0; layer < p.unison; layer++) {
+        const spread = p.unison === 1 ? 0 : (layer / (p.unison - 1)) * 2 - 1;
+        const cents = (spread * p.unisonDetune) / 2;
+        let pan = filter;
+        if (p.unison > 1) {
+          pan = c.createStereoPanner();
+          pan.pan.value = spread * p.stereoSpread;
+          pan.connect(filter);
+          v.nodes.push(pan);
+        }
+        // RMS compensation avoids making wide unison quieter; the master
+        // compressor catches coherent attack peaks. One layer preserves v1.0.
+        const gain = 1 / Math.sqrt(p.unison);
+        if (p.engine === "fm") {
+          const carrier = oscillator("sine", 1, gain, cents, pan);
+          const mod = c.createOscillator(),
+            depth = c.createGain();
+          mod.frequency.setValueAtTime(hz * p.ratio, t);
+          mod.detune.value = cents + this.bend * 200;
+          mod.connect(depth);
+          depth.connect(carrier.frequency);
+          mod.start(t);
+          v.osc.push(mod);
+          v.nodes.push(mod, depth);
+          v.pitch.push({ param: mod.detune, base: cents });
+          v.tuning.push({ param: mod.frequency, ratio: p.ratio });
+          v.fmDepths.push({ gain: depth.gain, ratio: 1 });
+        } else {
+          oscillator(p.wave, 1, 0.48 * gain, cents - p.detune / 2, pan);
+          oscillator(p.wave2, 1, 0.48 * gain, cents + p.detune / 2, pan);
+        }
       }
+      if (p.engine !== "fm" && p.sub) oscillator("sine", 0.5, p.sub, 0, filter);
       const vibrato = c.createOscillator(),
         depth = c.createGain();
       vibrato.frequency.value = 5.2;
@@ -561,20 +894,122 @@
       v.osc.push(vibrato);
       v.nodes.push(vibrato, depth);
       v.modDepth = depth;
+      this._envelope(v, velocity, t);
+      if (fromHz && p.portamento > 0) {
+        v.frequencyPlan = { start: t, end: t, from: fromHz, to: fromHz };
+        v.tuning.forEach((x) => x.param.setValueAtTime(fromHz * x.ratio, t));
+        this._syncPWM(v, t, 0, fromHz);
+        this._retune(v, note, t, p.portamento);
+      }
       v.osc[0].onended = () => {
         v.nodes.forEach((n) => n.disconnect());
         this.voices.delete(v.id);
+        if (this.monoVoice === v) this.monoVoice = null;
       };
       this.voices.set(v.id, v);
-      return v.id;
+      return v;
+    }
+    _frequencyAt(v, t) {
+      const p = v.frequencyPlan;
+      if (t <= p.start) return p.from;
+      if (t >= p.end) return p.to;
+      return (
+        p.from * Math.pow(p.to / p.from, (t - p.start) / (p.end - p.start))
+      );
+    }
+    _shapeAt(p, t, exponential = false) {
+      if (!p) return 0;
+      const elapsed = Math.max(0, t - p.start);
+      if (elapsed < p.attack)
+        return p.from + ((p.peak - p.from) * elapsed) / p.attack;
+      if (elapsed >= p.attack + p.decay) return p.end;
+      const x = (elapsed - p.attack) / p.decay;
+      return exponential
+        ? p.peak * Math.pow(p.end / p.peak, x)
+        : p.peak + (p.end - p.peak) * x;
+    }
+    _ampAt(v, t) {
+      const r = v.releasePlan;
+      if (r && t >= r.start)
+        return r.from * Math.max(0, 1 - (t - r.start) / (r.end - r.start));
+      return this._shapeAt(v.ampPlan, t);
+    }
+    _syncPWM(
+      v,
+      t,
+      glide = 0,
+      hz = this._frequencyAt(v, t),
+      fromHz = this._frequencyAt(v, t),
+    ) {
+      t = Math.max(t, v.start);
+      v.pwm.forEach((x) => {
+        const ratio =
+          x.ratio * Math.pow(2, (x.detune + this.bend * 200) / 1200);
+        [
+          [x.delay, x.width],
+          [x.depth, x.amount],
+        ].forEach(([param, amount]) => {
+          param.cancelAndHoldAtTime(t);
+          param.setValueAtTime(amount / (fromHz * ratio), t);
+          if (glide > 0 && amount > 0)
+            param.exponentialRampToValueAtTime(
+              amount / (hz * ratio),
+              t + glide,
+            );
+          else param.setValueAtTime(amount / (hz * ratio), t);
+        });
+      });
+    }
+    _retune(v, note, t, glide) {
+      const hz = 440 * Math.pow(2, (note - 69) / 12),
+        from = this._frequencyAt(v, t);
+      v.note = note;
+      // Explicitly anchor the start: a ramp must begin on the new key event,
+      // not on the preceding automation event earlier in the phrase.
+      const duration = Math.max(0.002, glide);
+      v.tuning.forEach((x) => {
+        x.param.cancelAndHoldAtTime(t);
+        x.param.setValueAtTime(from * x.ratio, t);
+        x.param.exponentialRampToValueAtTime(hz * x.ratio, t + duration);
+      });
+      this._syncPWM(v, t, duration, hz, from);
+      v.frequencyPlan = { start: t, end: t + duration, from, to: hz };
     }
     noteOff(noteOrId, { when } = {}) {
       const t = this._time(when);
+      if (this.params.mode === "mono") {
+        const matches = this.monoKeys.filter(
+          (k) => k.id === noteOrId || k.note === noteOrId,
+        );
+        if (!matches.length) return;
+        this._monoTime(t);
+        matches.forEach((k) => (k.down = false));
+        if (!this.sustained)
+          this.monoKeys = this.monoKeys.filter((k) => k.down);
+        this._resolveMono(t);
+        return;
+      }
       for (const v of this.voices.values())
         if ((v.id === noteOrId || v.note === noteOrId) && !v.released) {
           if (this.sustained) v.held = true;
           else this._release(v, t);
         }
+    }
+    _resolveMono(t) {
+      const v = this.monoVoice;
+      if (!v || v.released) return;
+      // Physical held keys take priority over notes held only by the pedal.
+      const key =
+        [...this.monoKeys].reverse().find((k) => k.down) ||
+        this.monoKeys[this.monoKeys.length - 1];
+      if (key) {
+        if (key.note !== v.note) {
+          this._retune(v, key.note, t, this.params.portamento);
+          if (!this.params.legato) this._envelope(v, key.velocity, t, true);
+        }
+        v.held = !key.down;
+        this.lastMonoHz = 440 * Math.pow(2, (key.note - 69) / 12);
+      } else this._release(v, t);
     }
     _hold(param, t) {
       param.cancelAndHoldAtTime(t);
@@ -584,30 +1019,64 @@
       v.released = true;
       v.held = false;
       t = Math.max(t, v.start + 0.002);
+      const from = this._ampAt(v, t);
       this._hold(v.amp.gain, t);
+      v.amp.gain.setValueAtTime(from, t);
       v.amp.gain.linearRampToValueAtTime(0, t + seconds);
-      v.osc.forEach((o) => o.stop(t + seconds + 0.02));
+      v.releasePlan = { start: t, end: t + seconds, from };
+      v.stopTime = t + seconds + 0.02;
+      v.osc.forEach((o) => o.stop(v.stopTime));
     }
     playNote(note, duration = 0.3, velocity = 0.8, { when } = {}) {
+      [note, velocity] = this._validateNote(note, velocity);
       const t = this._time(when);
       duration = clamp(finite(duration, "duration"), 0.01, 60);
-      const id = this.noteOn(note, velocity, { when: t });
-      if (id) this._release(this.voices.get(id), t + duration);
-      return id;
+      if (!velocity) return null;
+      if (this.params.mode === "mono") {
+        // Gated sequences are explicit events; noteOn/noteOff is the legato API.
+        this._monoTime(t);
+        for (const old of this.voices.values())
+          if (old.sequenceMono) this._shorten(old, t);
+        const v = this._createVoice(note, velocity, t, this.lastMonoHz);
+        v.sequenceMono = true;
+        this.lastMonoHz = 440 * Math.pow(2, (note - 69) / 12);
+        this._release(v, t + duration);
+        return v.id;
+      }
+      const v = this._createVoice(note, velocity, t);
+      this._release(v, t + duration);
+      return v.id;
+    }
+    _shorten(v, t) {
+      if (v.stopTime !== undefined && v.stopTime <= t) return;
+      const from = this._ampAt(v, t);
+      v.amp.gain.cancelAndHoldAtTime(t);
+      v.amp.gain.setValueAtTime(from, t);
+      v.amp.gain.linearRampToValueAtTime(0, t + 0.005);
+      v.releasePlan = { start: t, end: t + 0.005, from };
+      v.osc.forEach((o) => o.stop(t + 0.007));
+      v.stopTime = t + 0.007;
     }
     setSustain(on) {
       this.sustained = Boolean(on);
-      if (!this.sustained)
-        for (const v of this.voices.values())
-          if (v.held) this._release(v, this.context.currentTime);
+      if (!this.sustained) {
+        if (this.params.mode === "mono") {
+          this.monoKeys = this.monoKeys.filter((k) => k.down);
+          this._resolveMono(this.context.currentTime);
+        } else
+          for (const v of this.voices.values())
+            if (v.held) this._release(v, this.context.currentTime);
+      }
     }
     setPitchBend(value) {
       this.bend = clamp(finite(value, "pitch bend"), -1, 1);
       const t = this.context.currentTime;
-      for (const v of this.voices.values())
+      for (const v of this.voices.values()) {
         v.pitch.forEach((x) =>
           x.param.setTargetAtTime(x.base + this.bend * 200, t, 0.015),
         );
+        this._syncPWM(v, t, 0.03);
+      }
     }
     setModulation(value) {
       this.mod = clamp(finite(value, "modulation"), 0, 1);
@@ -631,6 +1100,10 @@
     }
     allNotesOff({ immediate = false } = {}) {
       this.sustained = false;
+      this.monoKeys = [];
+      this.monoVoice = null;
+      this.lastMonoHz = null;
+      this.monoEventTime = -Infinity;
       for (const v of this.voices.values()) {
         if (immediate || v.start > this.context.currentTime) this._kill(v);
         else this._release(v, this.context.currentTime);

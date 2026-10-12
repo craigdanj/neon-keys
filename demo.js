@@ -39,6 +39,14 @@ const controls = [
   ["delay", "Delay", 0, 0.7, "linear", "%"],
   ["reverb", "Reverb", 0, 0.65, "linear", "%"],
 ];
+controls.push(
+  ["pulseWidth", "Pulse width", 0.1, 0.9, "linear", "%"],
+  ["pwmDepth", "PWM depth", 0, 0.4, "linear", "%"],
+  ["pwmRate", "PWM rate", 0.05, 8, "log", "rate"],
+  ["unisonDetune", "Uni. detune", 0, 50, "linear", "ct"],
+  ["stereoSpread", "Stereo width", 0, 1, "linear", "%"],
+  ["portamento", "Glide", 0, 1.5, "linear", "s"],
+);
 const toValue = (spec, x) =>
   spec[4] === "log"
     ? spec[2] * Math.pow(spec[3] / spec[2], x)
@@ -48,24 +56,32 @@ const toPosition = (spec, v) =>
     ? Math.log(v / spec[2]) / Math.log(spec[3] / spec[2])
     : (v - spec[2]) / (spec[3] - spec[2]);
 const format = (v, unit) =>
-  unit === "%"
-    ? `${Math.round(v * 100)}%`
-    : unit === "Hz"
-      ? v >= 1000
-        ? `${(v / 1000).toFixed(1)}k Hz`
-        : `${Math.round(v)} Hz`
-      : unit === "s"
-        ? v < 0.1
-          ? `${Math.round(v * 1000)} ms`
-          : `${v < 1 ? v.toFixed(2) : v.toFixed(1)} s`
-        : `${v.toFixed(unit === "ct" ? 0 : 1)}${unit ? " " + unit : ""}`;
+  unit === "rate"
+    ? `${v.toFixed(2)} Hz`
+    : unit === "%"
+      ? `${Math.round(v * 100)}%`
+      : unit === "Hz"
+        ? v >= 1000
+          ? `${(v / 1000).toFixed(1)}k Hz`
+          : `${Math.round(v)} Hz`
+        : unit === "s"
+          ? v < 0.1
+            ? `${Math.round(v * 1000)} ms`
+            : `${v < 1 ? v.toFixed(2) : v.toFixed(1)} s`
+          : `${v.toFixed(unit === "ct" ? 0 : 1)}${unit ? " " + unit : ""}`;
 const edited = {};
 controls.forEach((spec) => {
   const [id, label] = spec;
   const c = document.createElement("div");
   c.className = "control";
   c.innerHTML = `<label for="param-${id}">${label}</label><div class="dial"></div><input id="param-${id}" type="range" min="0" max="1" step=".001" aria-describedby="value-${id}"><output id="value-${id}"></output>`;
-  $(controls.indexOf(spec) < 8 ? "toneControls" : "effectControls").append(c);
+  $(
+    controls.indexOf(spec) < 8
+      ? "toneControls"
+      : controls.indexOf(spec) < 12
+        ? "effectControls"
+        : "motionControls",
+  ).append(c);
   c.querySelector("input").addEventListener("input", (e) => {
     const value = toValue(spec, +e.target.value);
     edited[id] = value;
@@ -88,7 +104,66 @@ patchList.slice(0, 5).forEach((p, i) => {
   b.onclick = () => choosePreset(p.id);
   $("quickPresets").append(b);
 });
+patchList.slice(10).forEach((p) => {
+  const b = document.createElement("button");
+  b.textContent = p.name;
+  b.dataset.preset = p.id;
+  b.onclick = () => choosePreset(p.id);
+  $("newPresets").append(b);
+});
+function currentParams() {
+  return synth
+    ? synth.getParams()
+    : { ...patchList.find((p) => p.id === preset.value).params, ...edited };
+}
+function updateCharacter() {
+  const p = currentParams();
+  for (const name of ["wave", "wave2", "unison", "mode", "legato"])
+    $(name).value = p[name];
+  $("wave").disabled = $("wave2").disabled = p.engine === "fm";
+  $("legato").disabled = p.mode !== "mono";
+  const pulse =
+    p.engine !== "fm" && (p.wave === "pulse" || p.wave2 === "pulse");
+  for (const name of [
+    "pulseWidth",
+    "pwmDepth",
+    "pwmRate",
+    "unisonDetune",
+    "stereoSpread",
+    "portamento",
+  ]) {
+    const disabled =
+      name.startsWith("pwm") || name === "pulseWidth"
+        ? !pulse
+        : name === "portamento"
+          ? p.mode !== "mono"
+          : p.unison === 1;
+    $("param-" + name).disabled = disabled;
+    $("param-" + name).parentElement.style.opacity = disabled ? ".35" : "1";
+  }
+  $("motionHint").textContent =
+    p.mode === "mono"
+      ? "Hold a key, play another, then release it to return. Glide connects the pitches."
+      : pulse
+        ? "Hold a chord to hear the pulse move. Width and PWM edits shape your next phrase."
+        : "Choose Pulse / PWM on either oscillator to hear pulse-width modulation.";
+  $("engineType").textContent =
+    p.engine === "fm"
+      ? `${p.unison}× FM`
+      : `${p.unison}× ${p.wave === "pulse" || p.wave2 === "pulse" ? "PWM" : "ANALOG"}`;
+}
+for (const name of ["wave", "wave2", "unison", "mode", "legato"])
+  $(name).onchange = (e) => {
+    const value = ["unison", "legato"].includes(name)
+      ? +e.target.value
+      : e.target.value;
+    if (name !== "legato") panic();
+    edited[name] = value;
+    if (synth) synth.setParam(name, value);
+    updateCharacter();
+  };
 function choosePreset(id) {
+  if (synth) panic();
   preset.value = id;
   Object.keys(edited).forEach((k) => delete edited[k]);
   if (synth) synth.setPreset(id);
@@ -103,6 +178,7 @@ function choosePreset(id) {
       ? "FM SYNTHESIS"
       : `${p.params.wave.toUpperCase().replace("TOOTH", "")} + ${p.params.wave2.toUpperCase().replace("TOOTH", "")}`;
   controls.forEach((s) => updateControl(s, p.params[s[0]]));
+  updateCharacter();
   document
     .querySelectorAll("[data-preset]")
     .forEach((b) => b.classList.toggle("active", b.dataset.preset === id));
@@ -190,6 +266,7 @@ function refreshKeys() {
 }
 async function press(source, note) {
   if (inputs.has(source)) return;
+  if (demoOn) panic();
   const entry = { note, voice: null };
   inputs.set(source, entry);
   refreshKeys();
@@ -198,7 +275,10 @@ async function press(source, note) {
     if (inputs.get(source) !== entry) return;
     if (!arpOn) entry.voice = synth.noteOn(note, +$("velocity").value);
     else if (inputs.size === 1) {
-      nextTick = synth.context.currentTime;
+      nextTick = Math.max(
+        synth.context.currentTime,
+        synth.monoEventTime + 0.001,
+      );
       step = 0;
     }
   } catch {
@@ -387,12 +467,21 @@ const clock = setInterval(() => {
   while (nextTick < now + 0.09) {
     if (demoOn) {
       const chord = chords[Math.floor(step / 16) % 4];
-      const bass = preset.value === "bass";
+      const bass = preset.value === "bass" || preset.value === "rubber-bass";
+      const mono = synth.params.mode === "mono";
       if (bass) {
         if (step % 2 === 0)
           synth.playNote(chord[0] - 12, duration * 1.4, 0.85, {
             when: nextTick,
           });
+      } else if (mono) {
+        if (step % 2 === 0)
+          synth.playNote(
+            chord[[0, 2, 1, 3][Math.floor(step / 2) % 4]] + 12,
+            duration * 1.7,
+            0.78,
+            { when: nextTick },
+          );
       } else {
         if (step % 16 === 0)
           chord.forEach((n) =>

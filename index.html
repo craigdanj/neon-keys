@@ -30,7 +30,7 @@
         </div>
         <div class="hero-meta">
           <span>1980 — ∞</span><span>POLYPHONIC SYNTHESIZER</span
-          ><span>10 VOICES OF A DECADE</span>
+          ><span>16 VOICES OF A DECADE</span>
         </div>
       </section>
       <section class="instrument" aria-label="Synthesizer">
@@ -74,6 +74,8 @@
               ><button id="next" aria-label="Next preset">→</button>
             </div>
             <div class="quick-presets" id="quickPresets"></div>
+            <div class="new-preset-label">NEW / MOTION BANK</div>
+            <div class="new-presets" id="newPresets"></div>
           </section>
           <section class="shape-section">
             <div class="section-label">
@@ -85,7 +87,7 @@
             </div>
             <div class="knob-grid effects" id="effectControls"></div>
             <p class="control-hint">
-              Tone changes shape your next note. Effects update live.
+              Cutoff & resonance sweep live. Envelope edits shape the next note.
             </p>
           </section>
           <section class="performance-section">
@@ -130,6 +132,64 @@
             </div>
           </section>
         </div>
+        <section
+          class="character-section"
+          aria-label="Oscillators and playing mode"
+        >
+          <div class="character-heading">
+            <div class="section-label">
+              <span>05 / MOTION & CHARACTER</span><span>PWM + UNISON</span>
+            </div>
+            <p>Shape the pulse. Spread the voices. Connect the notes.</p>
+          </div>
+          <div class="character-selects">
+            <label
+              >OSCILLATOR 1<select id="wave">
+                <option value="sawtooth">Saw</option>
+                <option value="pulse">Pulse / PWM</option>
+                <option value="square">Square</option>
+                <option value="triangle">Triangle</option>
+                <option value="sine">Sine</option>
+              </select></label
+            >
+            <label
+              >OSCILLATOR 2<select id="wave2">
+                <option value="sawtooth">Saw</option>
+                <option value="pulse">Pulse / PWM</option>
+                <option value="square">Square</option>
+                <option value="triangle">Triangle</option>
+                <option value="sine">Sine</option>
+              </select></label
+            >
+            <label
+              >UNISON<select id="unison">
+                <option value="1">1 layer</option>
+                <option value="2">2 layers</option>
+                <option value="3">3 layers</option>
+                <option value="4">4 layers</option>
+                <option value="5">5 layers</option>
+                <option value="6">6 layers</option>
+              </select></label
+            >
+            <label
+              >PLAY MODE<select id="mode">
+                <option value="poly">Polyphonic</option>
+                <option value="mono">Monophonic</option>
+              </select></label
+            >
+            <label
+              >ENVELOPES<select id="legato">
+                <option value="1">Legato</option>
+                <option value="0">Retrigger</option>
+              </select></label
+            >
+          </div>
+          <div class="motion-controls" id="motionControls"></div>
+          <p class="motion-hint" id="motionHint">
+            Choose Pulse / PWM on either oscillator to hear pulse-width
+            modulation.
+          </p>
+        </section>
         <div class="playbar">
           <div class="octave-control">
             <span>OCTAVE</span
@@ -193,7 +253,7 @@
         <span>A little nostalgia. A lot of possibility.</span
         ><button id="helpToggle" aria-expanded="false" aria-controls="help">
           Playing guide <span>↗</span></button
-        ><span>NEON KEYS JS <b>v1.0.0</b></span>
+        ><span>NEON KEYS JS <b>v1.1.0</b></span>
       </footer>
       <section id="help" hidden>
         <h2>Make some noise.</h2>
@@ -210,6 +270,20 @@
           the selected tempo. The demo plays an original four-chord progression
           using the selected sound. Touch supports multiple fingers;
           computer-keyboard rollover depends on your hardware.
+        </p>
+        <p>
+          New in 1.1: choose <strong>Silk circuit</strong> for PWM pads,
+          <strong>Skyline brass</strong> for unison, or
+          <strong>Velvet glide</strong> for mono legato. Hold one note and press
+          another; release the newest key to return to the previous held note.
+          Retrigger restarts the envelopes on overlapping notes; Legato keeps
+          them flowing. Glide is active in mono mode. Cutoff and resonance
+          respond while notes are held.
+        </p>
+        <p>
+          Changing presets, waveforms, unison layer count, or play mode clears
+          held notes. Other oscillator edits apply to a new phrase. Unison uses
+          more processing power; reduce the layer count on slower devices.
         </p>
         <p>
           Built with the browser’s Web Audio API. Presets evoke classic ’80s

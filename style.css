@@ -1018,3 +1018,111 @@ footer b {
     font-size: 8px;
   }
 }
+
+/* Motion bank: native form controls remain keyboard and touch accessible. */
+.new-preset-label {
+  font: 8px monospace;
+  color: var(--pink);
+  letter-spacing: 1px;
+  margin: 22px 0 10px;
+}
+.new-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.new-presets button {
+  font: 9px/1.5 monospace;
+  padding: 8px 4px;
+  color: #c5b6c0;
+}
+.new-presets button.active {
+  border-color: var(--pink);
+  background: #f192b211;
+  color: var(--pink);
+}
+.character-section {
+  padding: 22px 25px;
+  border-top: 1px solid var(--line);
+  background: #202329;
+}
+.character-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: baseline;
+}
+.character-heading .section-label {
+  gap: 22px;
+  margin-bottom: 18px;
+}
+.character-heading p {
+  margin: 0;
+  font: 10px monospace;
+  color: #858d94;
+}
+.character-selects {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.character-selects label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font: 9px monospace;
+  letter-spacing: 0.7px;
+  color: #a5adb4;
+}
+.character-selects select {
+  font: 11px Arial;
+  color: #dad8d7;
+  background: #292d34;
+  border: 1px solid #454a52;
+  border-radius: 4px;
+  padding: 9px;
+  min-width: 0;
+  width: 100%;
+}
+.motion-controls {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-top: 22px;
+  --accent: var(--mint);
+}
+.motion-hint {
+  color: #8e979e;
+  font: 10px/1.6 monospace;
+  margin: 18px 0 0;
+  text-align: center;
+}
+.character-selects select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+@media (max-width: 650px) {
+  .character-section {
+    padding: 20px 17px;
+  }
+  .character-heading {
+    display: block;
+  }
+  .character-heading p {
+    display: none;
+  }
+  .character-selects {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .motion-controls {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 19px 10px;
+  }
+  .motion-hint {
+    font-size: 9px;
+  }
+  .new-presets button {
+    font-size: 8px;
+  }
+}
